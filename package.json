@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -23,6 +24,7 @@
     "express": "^4.17.1",
     "gravatar": "^1.8.0",
     "jsonwebtoken": "^8.5.1",
+    "mocha": "^8.0.1",
     "mongoose": "^5.9.17",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
