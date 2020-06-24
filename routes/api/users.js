@@ -28,7 +28,7 @@ router.post('/register', (req, res) => {
 
   // Check Validation
   if (hasError) {
-    console.log('Not valid request, returning 400');
+    //console.log('Not valid request, returning 400');
     return res.status(400).json(errors);
   }
 
@@ -73,7 +73,7 @@ router.post('/login', (req, res) => {
 
   // Check Validation
   if (hasError) {
-    console.log('Not valid request, returning 400');
+    //console.log('Not valid request, returning 400');
     return res.status(400).json(errors);
   }
 
