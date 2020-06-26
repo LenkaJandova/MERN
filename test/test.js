@@ -22,7 +22,7 @@ describe('test', function () {
       assert.equal(isEmpty(null), true);
     });
     it('stringWithJustSpaces', function () {
-      assert.equal('   ', true);
+      assert.equal(isEmpty('   '), true);
     });
   });
 });

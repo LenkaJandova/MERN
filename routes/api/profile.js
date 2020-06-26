@@ -9,6 +9,10 @@ const Profile = require('../../models/Profile');
 // Load User model
 const User = require('../../models/User');
 const { profile_url } = require('gravatar');
+const { default: validator } = require('validator');
+
+// Load Input validation
+const validateProfileInput = require('../validation/profile');
 
 // @route  GET api/profile/test
 // @desc   Tests profile route
@@ -46,6 +50,16 @@ router.post(
   '/',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    const { errors, isValid } = validateProfileInput(req.body);
+
+    // Check validation
+    if (!isValid) {
+      // Return any errors with 400 status
+      //console.log('not valid');
+      return res.status(400).json(errors);
+    }
+
+    // Get fields
     const profileFields = {};
     profileFields.user = req.user.id;
     if (req.body.handle) profileFields.handle = req.body.handle;
@@ -70,7 +84,7 @@ router.post(
     if (req.body.linkedin) profileFields.social.linkedin = req.body.linkedin;
     if (req.body.instagram) profileFields.social.instagram = req.body.instagram;
 
-    profile.findOne({ user: req.user.id }).then((profile) => {
+    Profile.findOne({ user: req.user.id }).then((profile) => {
       if (profile) {
         // Update
         Profile.findOneAndUpdate(
@@ -82,7 +96,7 @@ router.post(
         // Create
 
         // Check if handle exists
-        profile.findOne({ handle: profileFields.handle }).then((profile) => {
+        Profile.findOne({ handle: profileFields.handle }).then((profile) => {
           if (profile) {
             errors.handle = 'That handle already exists';
             res.status(400).json(errors);
