@@ -6,8 +6,12 @@ const passport = require('passport');
 // Load Post model
 const Post = require('../../models/Post');
 
+//Load Profile model
+const Profile = require('../../models/Profile');
+
 // Validation
 const validatePostInput = require('../validation/post');
+const User = require('../../models/User');
 
 // @route  GET api/posts/test
 // @desc   Tests posts route
@@ -41,7 +45,7 @@ router.post(
   }
 );
 
-// @route  POST api/posts/all
+// @route  Get api/posts/all
 // @desc   Show all posts
 // @access Public
 
@@ -71,6 +75,28 @@ router.get('/', (req, res) => {
 //     });
 // });
 
+// @route  Get api/posts
+// @desc   Show posts for current profile
+// @access Private
+
+router.get(
+  '/',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    const errors = {};
+
+    Post.find({ user: req.user.id })
+      .then((posts) => {
+        if (!posts) {
+          errors.noposts = 'There are no posts for this user';
+          return res.status(404).json(errors);
+        }
+        res.json(posts);
+      })
+      .catch((err) => res.status(404).json(err));
+  }
+);
+
 // @route  POST api/posts/:id
 // @desc   Get post by id
 // @access Public
@@ -87,6 +113,30 @@ router.get('/:id', (req, res) => {
 // @desc   Delete post by id
 // @access Private
 
-router.delete('/:id');
+router.delete(
+  '/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    console.log(req.user.id);
+    Profile.findOne({ user: req.user.id }).then((profile) => {
+      Post.findById(req.params.id)
+        .then((post) => {
+          console.log(post);
+          // Check for post owner
+          if (post.user.toString() !== req.user.id) {
+            return res
+              .status(401)
+              .json({ notauthorized: 'User not authorized' });
+          }
+          // Delete
+          post.remove().then(() => res.json({ succes: true }));
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(404).json({ postnotfound: 'No post found' });
+        });
+    });
+  }
+);
 
 module.exports = router;
