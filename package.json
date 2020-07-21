@@ -6,7 +6,7 @@
   "scripts": {
     "start": "nodemon server.js",
     "server": "nodemon server.js",
-    "test": "mocha"
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -24,16 +24,14 @@
     "express": "^4.17.1",
     "gravatar": "^1.8.0",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.19",
     "mongoose": "^5.9.17",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "validator": "^13.0.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4",
-    "mocha": "^8.0.1",
-    "mongo-mock": "^4.0.0",
-    "should": "^13.2.3"
+    "@shelf/jest-mongodb": "^1.2.1",
+    "jest": "^26.1.0",
+    "nodemon": "^2.0.4"
   }
 }
