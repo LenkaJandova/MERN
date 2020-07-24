@@ -12,6 +12,8 @@ const Profile = require('../../models/Profile');
 // Validation
 const validatePostInput = require('../validation/post');
 const User = require('../../models/User');
+const { session } = require('passport');
+const { json } = require('body-parser');
 
 // @route  GET api/posts/test
 // @desc   Tests posts route
@@ -171,6 +173,70 @@ router.post(
           res.status(404).json({ postnotfound: 'No post found' });
         });
     });
+  }
+);
+
+// @route  POST api/posts/unlike/:id
+// @desc   Unlike a post
+// @access Private
+
+router.post(
+  '/unlike/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    console.log('user ID:' + req.user.id);
+    Profile.findOne({ user: req.user.id }).then((profile) => {
+      Post.findById(req.params.id)
+        .then((post) => {
+          // Check if the user wants to unlike his own post
+          if (
+            post.likes.filter((like) => like.user.toString() === req.user.id)
+              .length === 0
+          ) {
+            res
+              .status(400)
+              .json({ notliked: 'You have not yet liked this post' });
+          }
+
+          // Get remove index
+          const removeIndex = post.likes
+            .map((item) => item.user.toString())
+            .indexOf(req.user.id);
+          console.log('removeIndex:' + removeIndex);
+          // Remove user from likes array
+          post.likes.splice(removeIndex, 1);
+          // Save
+          post.save().then((post) => res.json(post));
+        })
+        .catch((err) => {
+          console.log(err);
+          res.status(404).json({ postnotfound: 'No post found' });
+        });
+    });
+  }
+);
+
+// @route  POST api/posts/comment/:id
+// @desc   Post a comment
+// @access Private
+
+router.post(
+  '/comment/:id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Post.findById(req.params.id)
+      .then((post) => {
+        const newComment = {
+          text: req.body.text,
+          name: req.body.name,
+          avatar: req.body.avatar,
+          user: req.user.id,
+        };
+        // Add to comments array
+        post.comments.unshift(newComment);
+        post.save().then((post) => res.json(post));
+      })
+      .catch((err) => res.status(404).json({ nopostound: 'No post found' }));
   }
 );
 
