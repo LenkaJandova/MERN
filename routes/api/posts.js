@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const passport = require('passport');
+const { deleteComment } = require('./posts-functions');
 
 // Load Post model
 const Post = require('../../models/Post');
@@ -224,6 +225,14 @@ router.post(
   '/comment/:id',
   passport.authenticate('jwt', { session: false }),
   (req, res) => {
+    const { errors, isValid } = validatePostInput(req.body);
+
+    // Check validation
+    if (!isValid) {
+      // If any errors, send 400 with errors object
+      return res.status(400).json(errors);
+    }
+
     Post.findById(req.params.id)
       .then((post) => {
         const newComment = {
@@ -238,6 +247,46 @@ router.post(
       })
       .catch((err) => res.status(404).json({ nopostound: 'No post found' }));
   }
+);
+
+// @route  DELETE api/posts/comment/:id/:comment_id
+// @desc   Delete a comment from a post
+// @access Private
+
+router.delete(
+  '/comment/:id/:comment_id',
+  passport.authenticate('jwt', { session: false }),
+  (req, res) => {
+    Post.findById(req.params.id).then((post) => {
+      // Check if the comment exists
+      if (
+        post.comments.filter(
+          (comment) => comment._id.toString() === req.params.comment_id
+        ).length === 0
+      ) {
+        res.status(404).json({ commentnotexists: 'Comment does not exists' });
+      }
+      // Get remove index
+      const removeIndex = post.comments
+        .map((item) => item._id.toString())
+        .indexOf(req.params.comment_id);
+
+      // Splice comment out of array
+      post.comments.splice(removeIndex, 1);
+
+      post.save().then((post) => res.json(post));
+    });
+  }
+);
+
+// @route  DELETE api/posts/comment/:id
+// @desc   Delete a comment
+// @access Private
+
+router.delete(
+  '/comment/:id',
+  passport.authenticate('jwt', { session: false }),
+  deleteComment
 );
 
 module.exports = router;
